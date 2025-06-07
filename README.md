@@ -1,0 +1,1 @@
+This is Spotify API app for find out whats new!
