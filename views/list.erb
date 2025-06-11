@@ -1,0 +1,19 @@
+<h1>Результати моніторингу плейлистів</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Назва плейлиста</th>
+      <th>Нові треки</th>
+      <th>Видалені треки</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @results.each do |result| %>
+      <tr>
+        <td><%= result[:name] %></td>
+        <td><%= result[:added].map { |t| t["track"]["name"] }.join(", ") %></td>
+        <td><%= result[:removed].map { |t| t["track"]["name"] }.join(", ") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
