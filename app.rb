@@ -1,31 +1,38 @@
-require 'httparty'
-require 'json'
-require 'base64'
 require 'dotenv/load'
+require_relative 'spotify_client'
+require_relative 'playlist_watcher'
+require_relative 'snapshot_storage'
+require_relative 'snapshot_comparator'
 
-def fetch_access_token(client_id, client_secret)
-  encoded = Base64.strict_encode64("#{client_id}:#{client_secret}")
+client = SpotifyClient.new(
+  ENV['SPOTIFY_CLIENT_ID'],
+  ENV['SPOTIFY_CLIENT_SECRET']
+)
 
-  response = HTTParty.post(
-    "https://accounts.spotify.com/api/token",
-    headers: {
-      "Authorization" => "Basic #{encoded}",
-      "Content-Type" => "application/x-www-form-urlencoded"
-    },
-    body: {
-      "grant_type" => "client_credentials"
-    }
-  )
+watcher = PlaylistWatcher.new(client)
 
-  json = JSON.parse(response.body)
-  json['access_token']
+puts "Введи Spotify link на профіль друга:"
+user_link = gets.strip
+user_id = client.extract_user_id(user_link)
+storage = SnapshotStorage.new(user_id)
+
+puts "Завантажую плейлісти користувача #{user_id}..."
+playlists = watcher.watch_user_playlists(user_id)
+
+playlists.each do |playlist|
+  puts playlist["name"]
+  tracks = watcher.watch_playlist_tracks(playlist["id"])
+  old_snapshot = storage.load(playlist["id"])
+  comparison = SnapshotComparator.compare(old_snapshot, tracks)
+
+  puts '*' * 80
+  puts "Нові треки:"
+  comparison[:added].each { |t| puts "- #{t["track"]["name"]}" }
+
+  puts "Видалені треки:"
+  comparison[:removed].each { |t| puts "- #{t["track"]["name"]}" }
+  puts '*' * 80
+  storage.save(playlist["id"], tracks)
 end
 
-client_id = ENV['SPOTIFY_CLIENT_ID']
-client_secret = ENV['SPOTIFY_CLIENT_SECRET']
 
-abort("Missing SPOTIFY_CLIENT_ID") unless client_id
-abort("Missing SPOTIFY_CLIENT_SECRET") unless client_secret
-
-access_token = fetch_access_token(client_id, client_secret)
-puts "Access token: #{access_token}"
