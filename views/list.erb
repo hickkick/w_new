@@ -1,19 +1,51 @@
-<h1>Результати моніторингу плейлистів</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Назва плейлиста</th>
-      <th>Нові треки</th>
-      <th>Видалені треки</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @results.each do |result| %>
-      <tr>
-        <td><%= result[:name] %></td>
-        <td><%= result[:added].map { |t| t["track"]["name"] }.join(", ") %></td>
-        <td><%= result[:removed].map { |t| t["track"]["name"] }.join(", ") %></td>
-      </tr>
+<% @results.each do |playlist| %>
+  <div class="playlist-tile" data-playlist-id="<%= playlist.id %>">
+    <h3><%= playlist.name %> (<%= playlist.total %> треків)</h3>
+
+    <% if playlist.has_added? %>
+      <p><strong>Додано:</strong></p>
+      <ul>
+        <% playlist.added.each do |track| %>
+          <li>
+            <img src="<%= track.album_cover %>" width="40" height="40" style="vertical-align: middle;">
+            <%= track.name %> — <%= track.artists %> 
+            <small><%= track.added_at_formatted %></small>
+            <a href="<%= track.play_url %>" target="_blank">Слухати</a>
+          </li>
+        <% end %>
+      </ul>
     <% end %>
-  </tbody>
-</table>
+
+    <% if playlist.has_removed? %>
+      <p><strong>Видалено:</strong></p>
+      <ul>
+        <% playlist.removed.each do |track| %>
+          <li>
+            <img src="<%= track.album_cover %>" width="40" height="40" style="vertical-align: middle;">
+            <%= track.name %> — <%= track.artists %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <details>
+      <summary>Всі треки</summary>
+      <ul>
+        <% playlist.tracks.each do |track| %>
+          <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; justify-content: space-between;">
+            <div class="box" style="display: flex; align-items: center; gap: 10px;">
+              <img src="<%= track.album_cover %>" alt="cover" width="64" height="64">
+              <div>
+                <strong><%= track.name %></strong><br>
+                <small><%= track.artists %></small>
+              </div>
+            </div>
+            <div>
+              <%= track.added_at_formatted %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </details>
+  </div>
+<% end %>

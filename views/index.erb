@@ -1,15 +1,21 @@
-<!-- views/index.erb -->
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Spotify Watcher</title>
-</head>
-<body>
-  <h1>Spotify Playlist Watcher</h1>
-  <form action="/watch" method="POST">
+
+  <form action="/watch" method="POST" id="watch-form">
     <label>Spotify профіль лінк:</label>
     <input type="text" name="link" />
     <button type="submit">Перевірити</button>
   </form>
-</body>
-</html>
+
+<div id="loader" style="opacity:0; margin-top:1rem;">
+  <p>⏳ Завантаження...</p>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("watch-form");
+    const loader = document.getElementById("loader");
+
+    form.addEventListener("submit", () => {
+      loader.style.opacity = "1";
+    });
+  });
+</script>
