@@ -9,7 +9,11 @@ class SnapshotStorage
     @user_dir = File.join(SNAPSHOT_DIR, user_id)
     FileUtils.mkdir_p(@user_dir)
   end
-
+  
+  def initialized?(playlist_id)
+    File.exist?(snapshot_path(playlist_id))
+  end
+  
   def snapshot_path(playlist_id)
     File.join(@user_dir, "#{playlist_id}.json")
   end

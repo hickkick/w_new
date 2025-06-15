@@ -14,8 +14,10 @@ class SpotifyClient
   end
 
   def extract_user_id(profile_url)
-    match = profile_url.match(%r{user/([^/?]+)})
-    match ? match[1] : nil
+    return nil unless profile_url.is_a?(String)
+
+    match = profile_url.match(%r{open\.spotify\.com/user/([^/?]+)})
+    match[1] if match
   end
 
   def get_user_playlists(user_id)
@@ -27,6 +29,11 @@ class SpotifyClient
     url = "#{API_BASE}/playlists/#{playlist_id}/tracks"
     make_request(url)
   end
+  
+  def fetch_user_profile(user_id)
+    url = "#{API_BASE}/users/#{user_id}"
+    make_request(url)
+  end
 
   private
 
@@ -35,6 +42,11 @@ class SpotifyClient
     response = HTTParty.get(url, headers: {
       "Authorization" => "Bearer #{@access_token}"
     })
+
+    if response.code >= 400
+      raise "Spotify API Error (#{response.code}): #{response.body}"
+    end
+
     JSON.parse(response.body)
   end
 

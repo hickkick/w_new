@@ -1,12 +1,21 @@
+<% if @error %>
+  <p class="form-error"><%= @error %></p>
+<% end %>
 
-  <form action="/watch" method="POST" id="watch-form">
+  <form action="/watch" method="POST" id="watch-form" class="search-form">
     <label>Spotify профіль лінк:</label>
-    <input type="text" name="link" />
-    <button type="submit">Перевірити</button>
+    <div class="search-form__wrapper">
+      <input class="search-form__input" type="text" name="link" placeholder="user link..."/>
+      <button class="button button-circle play-button search-form__btn" type="submit">
+        <svg class="play-icon" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+    </div>
   </form>
 
-<div id="loader" style="opacity:0; margin-top:1rem;">
-  <p>⏳ Завантаження...</p>
+<div class="loader center" id="loader">
+  <p><span class="spinner">⏳</span> Завантаження...</p>
 </div>
 
 <script>

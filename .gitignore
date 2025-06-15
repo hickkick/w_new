@@ -4,3 +4,64 @@ node_modules/
 blank
 token_cache.json
 snapshots/
+TODO
+css_demo/
+# Ruby / Bundler
+*.gem
+*.rbc
+.bundle/
+vendor/bundle/
+log/
+tmp/
+*.log
+*.pid
+*.swp
+
+# Sinatra / Rack
+.ruby-version
+.ruby-gemset
+
+# Environment variables / tokens
+.env
+token_cache.json
+
+# Node / npm / frontend
+node_modules/
+dist/
+public/assets/
+.yarn/
+.pnp.*
+package-lock.json
+yarn.lock
+
+# Snapshots / Cache / Local Data
+snapshots/
+coverage/
+cache/
+*.sqlite3
+*.db
+
+# macOS / Editor junk
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+.idea/
+.vscode/
+*.bak
+*.orig
+*.tmp
+*~
+
+# Your own dev notes
+TODO
+blank
+
+# Compiled assets / output
+/public/compiled/
+/public/js/bundle.js
+/public/css/bundle.css
+
+# OS/system
+Thumbs.db
+ehthumbs.db
+Desktop.ini
