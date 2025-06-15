@@ -9,3 +9,5 @@ gem 'httparty', '~> 0.23.1'
 gem 'json', '~> 2.11.3'
 gem 'rack'
 gem 'puma'
+
+gem "rackup", "~> 2.2"
