@@ -1,5 +1,4 @@
 .env
-Gemfile.lock
 node_modules/
 blank
 token_cache.json
