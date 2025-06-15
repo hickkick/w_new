@@ -18,7 +18,7 @@ require_relative './lib/playlist_statistics'
 require_relative './lib/stats_wrapper'
 
 set :bind, '0.0.0.0'
-set :port, 4567
+set :port, ENV.fetch('PORT', 4567)
 enable :sessions
 
 before do
