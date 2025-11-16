@@ -1,40 +1,54 @@
-require 'dotenv/load'
-require 'sinatra'
-require 'sinatra/json'
+require "dotenv/load"
+require "sinatra"
+require "sinatra/json"
 
 configure :development do
-  require 'sinatra/reloader'
-  also_reload './**/*.rb'
+  require "sinatra/reloader"
+  also_reload "./**/*.rb"
 end
 
-require 'securerandom'
-require_relative './lib/spotify_client'
-require_relative './lib/playlist_watcher'
-require_relative './lib/snapshot_storage'
-require_relative './lib/snapshot_comparator'
-require_relative './lib/track_wrapper'
-require_relative './lib/playlist_wrapper'
-require_relative './lib/playlist_statistics'
-require_relative './lib/stats_wrapper'
+require "securerandom"
+require_relative "./lib/spotify_client"
+require_relative "./lib/playlist_watcher"
+require_relative "./lib/snapshot_storage"
+require_relative "./lib/snapshot_comparator"
+require_relative "./lib/track_wrapper"
+require_relative "./lib/playlist_wrapper"
+require_relative "./lib/playlist_statistics"
+require_relative "./lib/stats_wrapper"
 
-set :bind, '0.0.0.0'
-set :port, ENV.fetch('PORT', 4567)
-enable :sessions
+set :bind, "0.0.0.0"
+set :port, ENV.fetch("PORT", 4567)
+disable :sessions
 
 before do
-  session[:user_id] ||= SecureRandom.hex(10)
-  puts "Current session user_id: #{session[:user_id]}"
+  user_id = request.cookies["app_user_id"]
+
+  unless user_id
+    user_id = SecureRandom.uuid
+    response.set_cookie(
+      "app_user_id",
+      value: user_id,
+      path: "/",
+      expires: Time.now + 365 * 24 * 60 * 60, # 1 year
+    )
+    puts "Assigned NEW persistent user_id: #{user_id}"
+  else
+    puts "Existing persistent user_id: #{user_id}"
+  end
+
+  @user_id = user_id
 end
 
-get '/' do
+get "/" do
   erb :index
 end
 
-post '/watch' do
+post "/watch" do
   user_link = params[:link]
-  client = SpotifyClient.new(ENV['SPOTIFY_CLIENT_ID'], ENV['SPOTIFY_CLIENT_SECRET'])
+  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
   user_id = client.extract_user_id(user_link)
-  
+
   unless user_id
     @error = "Це не схоже на посилання профілю Spotify. Має виглядати як: https://open.spotify.com/user/username"
     return erb :index
@@ -47,9 +61,8 @@ post '/watch' do
     @user_avatar = user_profile["images"]&.first&.dig("url")
 
     playlists = watcher.watch_user_playlists(user_id)
-    storage = SnapshotStorage.new(session[:user_id])
+    storage = SnapshotStorage.new(@user_id)
     @first_time_per_user = playlists.none? { |pl| storage.initialized?(pl["id"]) }
-
 
     @results = playlists.map do |pl|
       tracks = watcher.watch_playlist_tracks(pl["id"])
@@ -60,15 +73,15 @@ post '/watch' do
       storage.save(pl["id"], tracks)
 
       PlaylistWrapper.new(
-        id: pl["id"],   
+        id: pl["id"],
         name: pl["name"],
         total: tracks.size,
-        owner_id: pl.dig("owner", "id"), 
+        owner_id: pl.dig("owner", "id"),
         image_url: pl.dig("images", 0, "url"),
         added: comparison[:added],
         removed: comparison[:removed],
         tracks: tracks,
-        initialized: was_initialized
+        initialized: was_initialized,
       )
     end
 
