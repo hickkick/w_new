@@ -56,32 +56,19 @@ document.querySelectorAll('.playlist-card__inner').forEach(tile => {
 });
 // END card section
 // theme section
-function applyTheme(theme) {
-    if (theme === "dark") {
-        document.body.classList.add("dark-theme");
+document.getElementById("theme-toggle").addEventListener("click", () => {
+    const isLight = document.documentElement.classList.contains("light-theme");
+    const newTheme = isLight ? "dark" : "light";
+
+    if (newTheme === "light") {
+        document.documentElement.classList.add("light-theme");
         document.getElementById("theme-icon").textContent = "🌞";
     } else {
-        document.body.classList.remove("dark-theme");
+        document.documentElement.classList.remove("light-theme");
         document.getElementById("theme-icon").textContent = "🌙";
     }
-}
 
-// 1. Перевірити локальне збереження
-let savedTheme = localStorage.getItem("theme");
-
-if (!savedTheme) {
-    // 2. Якщо нема — дивимось системну тему
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    savedTheme = prefersDark ? "dark" : "light";
-}
-
-applyTheme(savedTheme);
-
-// 3. Обробка натискання кнопки
-document.getElementById("theme-toggle").addEventListener("click", () => {
-    const newTheme = document.body.classList.contains("dark-theme") ? "light" : "dark";
     localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
 });
 // END themesection
 

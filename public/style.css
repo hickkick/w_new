@@ -1,10 +1,10 @@
 :root {
-  --bg: #f9f9f9;
-  --text: #1e1e1e;
-  --muted: #666;
+  --bg: #121212;
+  --text: #f1f1f1;
+  --muted: #aaa;
   --accent: #1db954;
-  --card: #ffffff;
-  --border: #ddd;
+  --card: #1e1e1e;
+  --border: #2a2a2a;
   --button-bg: var(--accent);
   --button-text: #fff;
 
@@ -20,12 +20,12 @@
   --font-lg: 1.25rem;
 }
 
-.dark-theme {
-  --bg: #121212;
-  --text: #f1f1f1;
-  --muted: #aaa;
-  --card: #1e1e1e;
-  --border: #2a2a2a;
+.light-theme {
+  --bg: #f9f9f9;
+  --text: #1e1e1e;
+  --muted: #666;
+  --card: #ffffff;
+  --border: #ddd;
 }
 
 *,
