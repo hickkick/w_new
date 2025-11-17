@@ -1,16 +1,16 @@
 <div class="playlist-card is-collapsed">
   <div class="playlist-card__inner js-expander">
     <img class="playlist-card__cover" src="<%= image_url %>" alt="cover" width="100%" style="border-radius: 10px; margin-bottom: 10px;">
-    <h3 class="playlist-card__title"><%= title %> (<%= tracks.size %> треків)</h3>
+    <h3 class="playlist-card__title"> <%= title %> (<%= t("playlists.tracks_count", count: tracks.size) %>)</h3>
   </div>
 
   <div class="playlist-card__expander">
-    <button class="js-collapser exit" aria-label="Закрити">
+    <button class="js-collapser exit" aria-label="<%= t('track.close') %>">
       <svg class="exit-icon" viewBox="0 0 24 24">
         <path fill="currentColor" d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
-    <%= title %> (<%= tracks.size %> треків)
+    <%= title %> (<%= t("playlists.tracks_count", count: tracks.size) %>)
     
     <% tracks.reverse.each do |track| %>
       <div class="track-item">

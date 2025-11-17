@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="<%= I18n.locale %>">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <script>
       try {
         const saved = localStorage.getItem("theme");
@@ -18,33 +18,51 @@
       } catch (e) {}
     </script>
 
-    <title>Моніторинг Spotify</title>
+    <title><%= I18n.t("app.title") %></title>
     <link rel="stylesheet" href="/style.css">
   </head>
+
   <body class="body">
     <header class="header">
-      <h1 class="header__title">🎧 Spotify Playlist Watch</h1>
-      <button class="button button-circle button_theme" id="theme-toggle" aria-label="Перемкнути тему"><span id="theme-icon">🌙</span></button>
+      <h1 class="header__title"><%= I18n.t("app.header_title") %></h1>
+
+      <nav class="top-nav">
+        <button class="button button-circle button_theme" 
+                id="theme-toggle" 
+                aria-label="<%= I18n.t("app.toggle_theme_aria") %>">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <div class="lang-switch">
+          <a class="lang-btn <%= 'active' if I18n.locale == :uk %>" 
+            href="/set_lang?lang=uk&redirect_to=<%= request.path %>">UA</a>
+
+          <a class="lang-btn <%= 'active' if I18n.locale == :en %>" 
+            href="/set_lang?lang=en&redirect_to=<%= request.path %>">EN</a>
+        </div>
+      </nav>
     </header>
+
     <main class="main">
       <%= yield %>
     </main>
+
     <footer class="footer center">
-      <p>&copy; 2025 — Відстежуй музику зі стилем!  <a  class="default-link" href="#" id="open-info-modal">ℹ️ Що це за проєкт?</a></p>
+      <p>&copy; <%= I18n.t("app.footer_year") %> — <%= I18n.t("app.footer_text") %>  
+      <a class="default-link" href="#" id="open-info-modal"><%= I18n.t("app.info_link") %></a></p>
     </footer>
 
     <div id="info-modal" class="modal" style="display: none;">
       <div class="modal-content">
         <span class="close">&times;</span>
-        <h3>🚧 Тестова версія</h3>
-        <p>Це попередній запуск. Дані не зберігаються в базі. <br>Не очищуйте кукі — все зникне!</p>
-        <p>Made with love by <a href="https://github.com/hickkick" target="blank" class="default-link">Romanoli</a></p>
+        <h3><%= I18n.t("app.modal_title") %></h3>
+        <p><%= I18n.t("app.modal_text") %></p>
+        <p><%= I18n.t("app.modal_made") %>  
+           <a href="https://github.com/hickkick" target="blank" class="default-link">Romanoli</a>
+        </p>
       </div>
     </div>
-
 
     <script src="/js/main.js" defer></script>
   </body>
 </html>
-
-

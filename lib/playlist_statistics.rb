@@ -10,7 +10,7 @@ class PlaylistStatistics
       total_tracks: all_owned_tracks.size,
       latest_added_track: all_owned_tracks
         .select { |t| t.respond_to?(:added_at) && t.added_at } # додатковий захист
-        .max_by(&:added_at)
+        .max_by(&:added_at),
     }
   end
 end

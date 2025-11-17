@@ -1,0 +1,37 @@
+en:
+  app:
+    title: "Spotify Playlist Watch"
+    header_title: "🎧 Spotify Playlist Watch"
+    toggle_theme_aria: "Toggle theme"
+    footer_text: "Track your music with style!"
+    footer_year: "2025"
+    info_link: "ℹ️ What is this project?"
+    modal_title: "🚧 Test version"
+    modal_text: "This is a preview release. Data is not stored in a database. Do not clear your cookies — everything will disappear!"
+    modal_made: "Made with love by"
+    lang_ua: "UA"
+    lang_en: "EN"
+  index:
+    label_profile_link: "Spotify profile link:"
+    placeholder_user_link: "user link..."
+    loading: "Loading..."
+    error_invalid: "Invalid link"
+
+  header:
+    playlists: "Playlists"
+    owned_playlists: "Owned"
+    tracks_in_owned: "Tracks in owned"
+    latest_track: "Latest added track"
+    new_search: "New search"
+
+  playlists:
+    added_global: "🟢 New tracks in all playlists"
+    removed_global: "🔴 Removed tracks from playlists"
+    tracks_count: "%{count} tracks"
+    first_run: "This is the first run. Changes will be shown after the next refresh."
+
+  track:
+    close: "Close"
+
+  errors:
+    invalid_link: "This doesn't look like a Spotify profile link."

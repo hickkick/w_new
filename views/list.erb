@@ -4,12 +4,25 @@
       <img class="user-header__avatar" src="<%= @user_avatar %>" alt="avatar" width="64" height="64">
     <% end %>
     <h2 class="user-header__name"><%= @user_display_name %></h2>
-    <p class="user-header__info">Плейлістів: <%= @stats.total_playlists %></p>
-    <p class="user-header__info">Власних: <%= @stats.owned_playlists %></p>
-    <p class="user-header__info">Треків у власних: <%= @stats.total_tracks %></p>
-    <p class="user-header__info">Останній доданий трек: <%= @stats.latest_track_name %> — <%= @stats.latest_track_artist %> <i>(<%= @stats.latest_track_date %>)</i></p>
-    <form action="/watch" method="post" id="watch-form">
-      <input type="hidden" name="link" value="<%= request.params['link'] %>">
+    <p class="user-header__info">
+      <%= t("header.playlists") %>: <%= @stats.total_playlists %>
+    </p>
+
+    <p class="user-header__info">
+      <%= t("header.owned_playlists") %>: <%= @stats.owned_playlists %>
+    </p>
+
+    <p class="user-header__info">
+      <%= t("header.tracks_in_owned") %>: <%= @stats.total_tracks %>
+    </p>
+
+    <p class="user-header__info">
+      <%= t("header.latest_track") %>:
+      <%= @stats.latest_track_name %> —
+      <%= @stats.latest_track_artist %>
+      (<%= @stats.latest_track_date %>)
+    </p>
+    <form action="/watch" method="get" id="watch-form">
       <button class="button refresh-button button-circle" type="submit">
         <svg class="refresh-icon" viewBox="0 0 24 24">
           <path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 13.65-6.65z" />
@@ -24,13 +37,13 @@
 %>
 <% if @first_time_per_user %>
   <div class="init-msg">
-    Це перший запуск. Зміни будуть показані після наступного оновлення.
+    <%= t("playlists.first_run")%>
   </div>
 <% else %>
   <div class="playlist-grid">
   <% if all_added.any? %>
     <%= erb :'partials/playlist_card', locals: {
-      title: "🟢 Нові треки в усіх плейлістах",
+      title: t("playlists.added_global"),
       image_url: all_added.first&.album_cover || "/images/cover_added.jpg",
       tracks: all_added
     } %>
@@ -38,7 +51,7 @@
 
   <% if all_removed.any? %>
     <%= erb :'partials/playlist_card', locals: {
-      title: "🔴 Видалені треки з плейлістів",
+      title: t("playlists.removed_global"),
       image_url: all_removed.first&.album_cover || "/images/cover_removed.jpg",
       tracks: all_removed
     } %>
@@ -59,7 +72,7 @@
 <div class="center" style="margin-top: 30px;">
   <form action="/" method="get">
     <button class="button button_new" type="submit">
-      🔍 Новий пошук
+      🔍 <%= t("header.new_search") %>
     </button>
   </form>
 </div>

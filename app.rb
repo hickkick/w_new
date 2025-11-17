@@ -8,6 +8,9 @@ configure :development do
 end
 
 require "securerandom"
+require "i18n"
+require "i18n/backend/simple"
+
 require_relative "./lib/spotify_client"
 require_relative "./lib/playlist_watcher"
 require_relative "./lib/snapshot_storage"
@@ -20,6 +23,12 @@ require_relative "./lib/stats_wrapper"
 set :bind, "0.0.0.0"
 set :port, ENV.fetch("PORT", 4567)
 disable :sessions
+
+configure do
+  I18n.load_path += Dir[File.join(settings.root, "locales", "*.yml")]
+  I18n.default_locale = :en
+  I18n.backend.load_translations
+end
 
 before do
   user_id = request.cookies["app_user_id"]
@@ -38,60 +47,89 @@ before do
   end
 
   @user_id = user_id
+
+  I18n.locale = request.cookies["lang"]&.to_sym || I18n.default_locale
+end
+
+helpers do
+  def t(key, **opts)
+    I18n.t(key, **opts)
+  end
 end
 
 get "/" do
   erb :index
 end
 
-post "/watch" do
-  user_link = params[:link]
-  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-  user_id = client.extract_user_id(user_link)
+get "/set_lang" do
+  lang = params[:lang]
 
-  unless user_id
-    @error = "Це не схоже на посилання профілю Spotify. Має виглядати як: https://open.spotify.com/user/username"
+  response.set_cookie(
+    "lang",
+    value: lang,
+    path: "/",
+    max_age: "31536000",
+  )
+
+  redirect params[:redirect_to] || "/"
+end
+
+post "/watch" do
+  link = params[:link]
+  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
+
+  user_id = client.extract_user_id(link)
+
+  if user_id.nil?
+    @error = I18n.t("errors.invalid_link")
     return erb :index
   end
 
-  begin
-    watcher = PlaylistWatcher.new(client)
-    user_profile = client.fetch_user_profile(user_id)
-    @user_display_name = user_profile["display_name"]
-    @user_avatar = user_profile["images"]&.first&.dig("url")
+  response.set_cookie("spotify_user_id", value: user_id, path: "/", max_age: "31536000")
 
-    playlists = watcher.watch_user_playlists(user_id)
-    storage = SnapshotStorage.new(@user_id)
-    @first_time_per_user = playlists.none? { |pl| storage.initialized?(pl["id"]) }
+  redirect "/watch"
+end
 
-    @results = playlists.map do |pl|
-      tracks = watcher.watch_playlist_tracks(pl["id"])
-      was_initialized = storage.initialized?(pl["id"])
-      previous_snapshot = storage.load(pl["id"])
-      comparison = SnapshotComparator.compare(previous_snapshot, tracks)
+get "/watch" do
+  user_id = request.cookies["spotify_user_id"]
 
-      storage.save(pl["id"], tracks)
+  redirect "/" unless user_id
 
-      PlaylistWrapper.new(
-        id: pl["id"],
-        name: pl["name"],
-        total: tracks.size,
-        owner_id: pl.dig("owner", "id"),
-        image_url: pl.dig("images", 0, "url"),
-        added: comparison[:added],
-        removed: comparison[:removed],
-        tracks: tracks,
-        initialized: was_initialized,
-      )
-    end
+  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
+  watcher = PlaylistWatcher.new(client)
 
-    raw_stats = PlaylistStatistics.compute(@results, user_id)
-    @stats = StatsWrapper.new(raw_stats)
+  user_profile = client.fetch_user_profile(user_id)
 
-    erb :list
-  rescue => e
-    puts "[watch error] #{e.message}"
-    @error = "Щось пішло не так при обробці Spotify. #{e.message}"
-    erb :index
+  @user_display_name = user_profile["display_name"]
+  @user_avatar = user_profile["images"]&.first&.dig("url")
+
+  playlists = watcher.watch_user_playlists(user_id)
+
+  storage = SnapshotStorage.new(request.cookies["app_user_id"])
+  @first_time_per_user = playlists.none? { |pl| storage.initialized?(pl["id"]) }
+
+  @results = playlists.map do |pl|
+    tracks = watcher.watch_playlist_tracks(pl["id"])
+    was_initialized = storage.initialized?(pl["id"])
+    prev = storage.load(pl["id"])
+    diff = SnapshotComparator.compare(prev, tracks)
+    storage.save(pl["id"], tracks)
+
+    PlaylistWrapper.new(
+      id: pl["id"],
+      name: pl["name"],
+      total: tracks.size,
+      owner_id: pl.dig("owner", "id"),
+      image_url: pl.dig("images", 0, "url"),
+      added: diff[:added],
+      removed: diff[:removed],
+      tracks: tracks,
+      initialized: was_initialized,
+    )
   end
+
+  stats_raw = PlaylistStatistics.compute(@results, user_id)
+  @stats = StatsWrapper.new(stats_raw)
+
+  erb :list
 end
