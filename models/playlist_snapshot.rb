@@ -1,0 +1,7 @@
+class PlaylistSnapshot < Sequel::Model
+  many_to_one :playlist
+  many_to_many :tracks,
+               join_table: :playlist_snapshot_tracks,
+               left_key: :snapshot_id,
+               right_key: :track_id
+end

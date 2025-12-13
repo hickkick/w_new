@@ -20,6 +20,8 @@ require_relative "./lib/playlist_wrapper"
 require_relative "./lib/playlist_statistics"
 require_relative "./lib/stats_wrapper"
 
+require_relative "./db/database"
+
 set :bind, "0.0.0.0"
 set :port, ENV.fetch("PORT", 4567)
 disable :sessions
