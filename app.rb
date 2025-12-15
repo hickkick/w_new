@@ -23,6 +23,8 @@ require_relative "./lib/stats_wrapper"
 require_relative "./db/database"
 
 require_relative "./services/user_playlist_changes"
+require_relative "./services/fetch_spotify_user_playlists"
+require_relative "./services/fetch_spotify_playlist_snapshot"
 
 set :bind, "0.0.0.0"
 set :port, ENV.fetch("PORT", 4567)
@@ -35,22 +37,31 @@ configure do
 end
 
 before do
-  user_id = request.cookies["app_user_id"]
+  # user_id = request.cookies["app_user_id"]
 
-  unless user_id
-    user_id = SecureRandom.uuid
-    response.set_cookie(
-      "app_user_id",
-      value: user_id,
-      path: "/",
-      expires: Time.now + 365 * 24 * 60 * 60, # 1 year
-    )
-    puts "Assigned NEW persistent user_id: #{user_id}"
-  else
-    puts "Existing persistent user_id: #{user_id}"
+  # unless user_id
+  #   user_id = SecureRandom.uuid
+  #   response.set_cookie(
+  #     "app_user_id",
+  #     value: user_id,
+  #     path: "/",
+  #     expires: Time.now + 365 * 24 * 60 * 60, # 1 year
+  #   )
+  #   puts "Assigned NEW persistent user_id: #{user_id}"
+  # else
+  #   puts "Existing persistent user_id: #{user_id}"
+  # end
+
+  # @user_id = user_id
+
+  uuid = request.cookies["app_user_id"]
+
+  unless uuid
+    uuid = SecureRandom.uuid
+    response.set_cookie("app_user_id", value: uuid, path: "/", expires: Time.now + 365 * 24 * 60 * 60)
   end
 
-  @user_id = user_id
+  @current_user = User.first(uuid: uuid) || User.create(uuid: uuid)
 
   I18n.locale = request.cookies["lang"]&.to_sym || I18n.default_locale
 end
@@ -136,4 +147,46 @@ get "/watch" do
   @stats = StatsWrapper.new(stats_raw)
 
   erb :list
+end
+
+get "/spotify/:spotify_user_id" do
+  spotify_user_id = params[:spotify_user_id]
+
+  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
+
+  # 1. наш локальний користувач (з cookie)
+  user = User.first(id: @current_user.id) || User.create(id: @current_user)
+
+  # 2. Spotify user
+  spotify_user = SpotifyUser.find_or_create(
+    spotify_user_id: spotify_user_id,
+  )
+
+  # 3. ФЕТЧ ПЛЕЙЛИСТІВ
+  FetchSpotifyUserPlaylists.new(
+    spotify_client: client,
+    spotify_user: spotify_user,
+  ).call
+
+  # 4. Для кожного плейлиста — snapshot + diff
+  results = spotify_user.playlists.map do |playlist|
+    snapshot_result = FetchSpotifyPlaylistSnapshot.new(
+      spotify_client: client,
+      playlist: playlist,
+    ).call
+
+    changes = UserPlaylistChanges.new(user, playlist)
+
+    {
+      playlist: playlist,
+      snapshot_created: snapshot_result != :unchanged,
+      added_tracks: changes.added,
+      removed_tracks: changes.removed,
+    }
+  end
+
+  erb :spotify_user, locals: {
+                       spotify_user: spotify_user,
+                       results: results,
+                     }
 end
