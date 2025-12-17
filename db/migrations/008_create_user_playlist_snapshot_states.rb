@@ -4,6 +4,7 @@ Sequel.migration do
       primary_key :id
 
       foreign_key :user_id, :users, null: false, on_delete: :cascade
+      foreign_key :spotify_user_id, :spotify_users, null: false, on_delete: :cascade
       foreign_key :playlist_id, :playlists, null: false, on_delete: :cascade
       foreign_key :playlist_snapshot_id, :playlist_snapshots, null: false, on_delete: :cascade
 
