@@ -1,0 +1,5 @@
+class UserSpotifyState < Sequel::Model
+  many_to_one :user
+  many_to_one :spotify_user
+  many_to_one :playlist_snapshot
+end

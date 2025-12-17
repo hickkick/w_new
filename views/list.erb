@@ -1,26 +1,24 @@
-<% if @user_display_name %>
+<!--<pre><%#= locals.inspect %></pre>-->
+<% if user_display_name %>
   <div class="user-header">
-    <% if @user_avatar %>
-      <img class="user-header__avatar" src="<%= @user_avatar %>" alt="avatar" width="64" height="64">
+    <% if user_avatar %>
+      <img class="user-header__avatar" src="<%= user_avatar %>" alt="avatar" width="64" height="64">
     <% end %>
-    <h2 class="user-header__name"><%= @user_display_name %></h2>
+    <h2 class="user-header__name"><%= user_display_name %></h2>
     <p class="user-header__info">
-      <%= t("header.playlists") %>: <%= @stats.total_playlists %>
+      <%= t("header.playlists") %>: <%= stats.total_playlists %>
     </p>
-
     <p class="user-header__info">
-      <%= t("header.owned_playlists") %>: <%= @stats.owned_playlists %>
+      <%= t("header.owned_playlists") %>: <%= stats.owned_playlists %>
     </p>
-
     <p class="user-header__info">
-      <%= t("header.tracks_in_owned") %>: <%= @stats.total_tracks %>
+      <%= t("header.tracks_in_owned") %>: <%= stats.total_tracks %>
     </p>
-
     <p class="user-header__info">
       <%= t("header.latest_track") %>:
-      <%= @stats.latest_track_name %> —
-      <%= @stats.latest_track_artist %>
-      (<%= @stats.latest_track_date %>)
+      <%= stats.latest_track_name %> —
+      <%= stats.latest_track_artist %>
+      (<%= stats.latest_track_date %>)
     </p>
     <form action="/watch" method="get" id="watch-form">
       <button class="button refresh-button button-circle" type="submit">
@@ -32,43 +30,38 @@
   </div>
 <% end %>
 <%
-  all_added = @results.flat_map(&:added)
-  all_removed = @results.flat_map(&:removed)
+  all_added = results.flat_map(&:added)
+  all_removed = results.flat_map(&:removed)
 %>
-<% if @first_time_per_user %>
+<% if first_time_per_user %>
   <div class="init-msg">
     <%= t("playlists.first_run")%>
   </div>
 <% else %>
   <div class="playlist-grid">
-  <% if all_added.any? %>
-    <%= erb :'partials/playlist_card', locals: {
+    <% if all_added.any? %>
+      <%= erb :'partials/playlist_card', locals: {
       title: t("playlists.added_global"),
       image_url: all_added.first&.album_cover || "/images/cover_added.jpg",
       tracks: all_added
     } %>
-  <% end %>
-
-  <% if all_removed.any? %>
-    <%= erb :'partials/playlist_card', locals: {
+    <% end %>
+    <% if all_removed.any? %>
+      <%= erb :'partials/playlist_card', locals: {
       title: t("playlists.removed_global"),
       image_url: all_removed.first&.album_cover || "/images/cover_removed.jpg",
       tracks: all_removed
     } %>
-  <% end %>
-
-  <% @results.each do |playlist| %>
-    <%= erb :'partials/playlist_card', locals: {
+    <% end %>
+    <% @results.each do |playlist| %>
+      <%= erb :'partials/playlist_card', locals: {
       title: playlist.name,
       image_url: playlist.image_url,
       tracks: playlist.tracks
     } %>
-  <% end %>
-</div>
-
+    <% end %>
+  </div>
 <% end %>
-
-
 <div class="center" style="margin-top: 30px;">
   <form action="/" method="get">
     <button class="button button_new" type="submit">
@@ -76,8 +69,6 @@
     </button>
   </form>
 </div>
-
-
 <script>
   const form = document.getElementById('watch-form');
   const refreshButton = document.querySelector('.refresh-button');
@@ -86,4 +77,3 @@
     refreshButton.classList.add('loading');
   });
 </script>
-

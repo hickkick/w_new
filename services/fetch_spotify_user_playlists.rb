@@ -9,18 +9,34 @@ class FetchSpotifyUserPlaylists
       @spotify_user.spotify_user_id
     )
 
-    playlists_data.each do |p|
+    playlists_data.map do |p|
       playlist = Playlist.find_or_create(
         playlist_id: p["id"],
-        spotify_user_id: @spotify_user.id,
+        # spotify_user_id: @spotify_user.id,
       )
+
+      # playlist.update(
+      #   name: p["name"],
+      #   description: p["description"],
+      #   image_url: p.dig("images", 0, "url"),
+      #   playlist_snapshot_id: p["snapshot_id"],
+      #   owner: p.dig("owner", "id") == @spotify_user.spotify_user_id,
+      # )
+
+      SpotifyUserPlaylist.find_or_create(
+        spotify_user_id: @spotify_user.id,
+        playlist_id: playlist.id,
+      ) do |sup|
+        sup.owner = (p.dig("owner", "id") == @spotify_user.spotify_user_id)
+      end
 
       playlist.update(
         name: p["name"],
         description: p["description"],
         image_url: p.dig("images", 0, "url"),
-        playlist_snapshot_id: p["snapshot_id"],
       )
+
+      playlist
     end
   end
 end

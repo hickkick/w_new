@@ -17,7 +17,7 @@ class FetchSpotifyPlaylistSnapshot
       snapshot_time: Time.now,
     )
 
-    tracks_data.each do |item|
+    tracks_data.each_with_index do |item, index|
       track_data = item["track"]
       next unless track_data
 
@@ -30,12 +30,24 @@ class FetchSpotifyPlaylistSnapshot
         artists: extract_artists(track_data),
         album: track_data["album"]["name"],
         album_cover_url: track_data.dig("album", "images", 1, "url") || "/default.jpg",
-        added_at: item["added_at"],
         duration_ms: track_data["duration_ms"],
         play_url: track_data.dig("external_urls", "spotify") || "#",
       )
 
-      snapshot.add_track(track)
+      existing = PlaylistSnapshotTrack.first(
+        snapshot_id: snapshot.id,
+        track_id: track.id,
+        position: index,
+      )
+
+      unless existing
+        PlaylistSnapshotTrack.create(
+          snapshot_id: snapshot.id,
+          track_id: track.id,
+          added_at: item["added_at"],
+          position: index,
+        )
+      end
     end
 
     snapshot
