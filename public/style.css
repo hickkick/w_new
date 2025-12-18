@@ -588,11 +588,11 @@ html,
 
 .modal-content {
   background-color: var(--card);
-  margin: 15% auto;
+  margin: 10% auto;
   padding: 30px;
   border-radius: 12px;
   width: 90%;
-  max-width: 400px;
+  max-width: 600px;
   text-align: center;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

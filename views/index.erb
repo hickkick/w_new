@@ -1,14 +1,15 @@
 <% if @error %>
   <p class="form-error"><%= @error %></p>
 <% end %>
-<form action="/watch/:spotify_user_id" method="POST" id="watch-form" class="search-form">
+<form action="/watch" method="POST" id="watch-form" class="search-form">
   <label><%= t("index.label_profile_link") %></label>
   <div class="search-form__wrapper">
     <input class="search-form__input"
            type="text"
            name="link"
            placeholder="<%= t('index.placeholder_user_link') %>"
-           required/>
+           required
+           pattern=".*spotify\.com.*"/>
     <button class="button button-circle play-button search-form__btn" type="submit">
       <svg class="play-icon" viewBox="0 0 24 24">
         <path fill="currentColor" d="M8 5v14l11-7z"/>

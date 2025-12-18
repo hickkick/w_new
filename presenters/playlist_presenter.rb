@@ -22,17 +22,17 @@ class PlaylistPresenter
   end
 
   def added
-    return tracks if previous_snapshot.nil?
+    return tracks if @previous_snapshot.nil?
 
     added_ids = current_ids - previous_ids
     wrap_tracks(added_ids)
   end
 
   def removed
-    return [] if previous_snapshot.nil?
+    return [] if @previous_snapshot.nil?
 
     removed_ids = previous_ids - current_ids
-    wrap_tracks(removed_ids, from: previous_snapshot)
+    wrap_tracks(removed_ids, from: @previous_snapshot)
   end
 
   private

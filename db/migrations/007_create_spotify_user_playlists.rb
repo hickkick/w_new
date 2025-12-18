@@ -24,6 +24,7 @@ Sequel.migration do
       foreign_key :spotify_user_id, :spotify_users, null: false, on_delete: :cascade
       foreign_key :playlist_id, :playlists, null: false, on_delete: :cascade
 
+      String :spotify_snapshot_id
       TrueClass :owner, default: false, null: false
       DateTime :added_at, default: Sequel::CURRENT_TIMESTAMP
 

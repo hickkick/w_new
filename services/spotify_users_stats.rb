@@ -8,10 +8,31 @@ class SpotifyUserStats
   end
 
   def owned_playlists
-    @spotify_user
+    owned_pl.count
+  end
+
+  def owned_pl
+    @owned_playlists ||= @spotify_user
       .spotify_user_playlists_dataset
       .where(owner: true)
-      .count
+      .map(&:playlist)
+  end
+
+  def current_owned_snapshots
+    @current_owned_snapshots ||= owned_pl.map do |playlist|
+      playlist
+        .playlist_snapshots_dataset
+        .order(:snapshot_time)
+        .last
+    end.compact
+  end
+
+  def owned_snapshot_tracks
+    @owned_snapshot_tracks ||= current_owned_snapshots.flat_map do |snapshot|
+      snapshot
+        .playlist_snapshot_tracks_dataset
+        .all
+    end
   end
 
   def current_snapshots
@@ -40,7 +61,7 @@ class SpotifyUserStats
   end
 
   def latest_snapshot_track
-    snapshot_tracks
+    owned_snapshot_tracks
       .select(&:added_at)
       .max_by(&:added_at)
   end

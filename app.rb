@@ -42,23 +42,6 @@ configure do
 end
 
 before do
-  # user_id = request.cookies["app_user_id"]
-
-  # unless user_id
-  #   user_id = SecureRandom.uuid
-  #   response.set_cookie(
-  #     "app_user_id",
-  #     value: user_id,
-  #     path: "/",
-  #     expires: Time.now + 365 * 24 * 60 * 60, # 1 year
-  #   )
-  #   puts "Assigned NEW persistent user_id: #{user_id}"
-  # else
-  #   puts "Existing persistent user_id: #{user_id}"
-  # end
-
-  # @user_id = user_id
-
   uuid = request.cookies["app_user_id"]
 
   unless uuid
@@ -74,14 +57,6 @@ end
 helpers do
   def t(key, **opts)
     I18n.t(key, **opts)
-  end
-
-  def first_time_per_user?(user, spotify_user)
-    playlists_ids = spotify_user.playlists_dataset.select_map(:id)
-
-    UserSeenChange
-      .where(user_id: user.id, playlist_id: playlists_ids)
-      .count == 0
   end
 end
 
@@ -103,116 +78,8 @@ get "/set_lang" do
 end
 
 post "/watch" do
-  link = params[:link]
   client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-
-  user_id = client.extract_user_id(link)
-
-  if user_id.nil?
-    @error = I18n.t("errors.invalid_link")
-    return erb :index
-  end
-
-  response.set_cookie("spotify_user_id", value: user_id, path: "/", max_age: "31536000")
-
-  redirect "/watch"
-end
-
-get "/watch" do
-  user_id = request.cookies["spotify_user_id"]
-
-  redirect "/" unless user_id
-
-  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-  watcher = PlaylistWatcher.new(client)
-
-  user_profile = client.fetch_user_profile(user_id)
-
-  @user_display_name = user_profile["display_name"]
-  @user_avatar = user_profile["images"]&.first&.dig("url")
-
-  playlists = watcher.watch_user_playlists(user_id)
-
-  storage = SnapshotStorage.new(request.cookies["app_user_id"])
-  @first_time_per_user = playlists.none? { |pl| storage.initialized?(pl["id"]) }
-
-  @results = playlists.map do |pl|
-    tracks = watcher.watch_playlist_tracks(pl["id"])
-    was_initialized = storage.initialized?(pl["id"])
-    prev = storage.load(pl["id"])
-    diff = SnapshotComparator.compare(prev, tracks)
-    storage.save(pl["id"], tracks)
-
-    PlaylistWrapper.new(
-      id: pl["id"],
-      name: pl["name"],
-      total: tracks.size,
-      owner_id: pl.dig("owner", "id"),
-      image_url: pl.dig("images", 0, "url"),
-      added: diff[:added],
-      removed: diff[:removed],
-      tracks: tracks,
-      initialized: was_initialized,
-    )
-  end
-
-  stats_raw = PlaylistStatistics.compute(@results, user_id)
-  @stats = StatsWrapper.new(stats_raw)
-
-  erb :list, locals: {
-               user_display_name: @user_display_name,
-               user_avatar: @user_avatar,
-               stats: @stats,
-               results: @results,
-               first_time_per_user: @first_time_per_user,
-             }
-end
-
-# get "/spotify/:spotify_user_id" do
-#   spotify_user_id = params[:spotify_user_id]
-
-#   client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-
-#   # 1. наш локальний користувач (з cookie)
-#   user = User.first(id: @current_user.id) || User.create(id: @current_user)
-
-#   # 2. Spotify user
-#   spotify_user = SpotifyUser.find_or_create(
-#     spotify_user_id: spotify_user_id,
-#   )
-
-#   # 3. ФЕТЧ ПЛЕЙЛИСТІВ
-#   FetchSpotifyUserPlaylists.new(
-#     spotify_client: client,
-#     spotify_user: spotify_user,
-#   ).call
-
-#   # 4. Для кожного плейлиста — snapshot + diff
-#   results = spotify_user.playlists.map do |playlist|
-#     snapshot_result = FetchSpotifyPlaylistSnapshot.new(
-#       spotify_client: client,
-#       playlist: playlist,
-#     ).call
-
-#     changes = UserPlaylistChanges.new(user, playlist)
-
-#     {
-#       playlist: playlist,
-#       snapshot_created: snapshot_result != :unchanged,
-#       added_tracks: changes.added,
-#       removed_tracks: changes.removed,
-#     }
-#   end
-
-#   erb :spotify_user, locals: {
-#                        spotify_user: spotify_user,
-#                        results: results,
-#                      }
-# end
-
-post "/watch/:spotify_user_id" do
-  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-  spotify_user_id = client.extract_user_id(params[:link])
+  spotify_user_id = client.extract_user_id(params[:link]) || params[:spotify_user_id]
 
   spotify_user = SpotifyUser.find_or_create(
     spotify_user_id: spotify_user_id,
@@ -229,28 +96,18 @@ post "/watch/:spotify_user_id" do
   ).call
 
   playlists.each do |playlist|
-    FetchSpotifyPlaylistSnapshot.new(
-      spotify_client: client,
-      playlist: playlist,
-    ).call
-
-    state = UserPlaylistSnapshotState.first(
-      user_id: @current_user.id,
+    link = SpotifyUserPlaylist.first(
+      spotify_user_id: spotify_user.id,
       playlist_id: playlist.id,
     )
 
-    if state
-      state.update(
-        playlist_snapshot_id: snapshot.id,
-        updated_at: Time.now,
-      )
-    else
-      UserPlaylistSnapshotState.create(
-        user_id: @current_user.id,
-        playlist_id: playlist.id,
-        playlist_snapshot_id: snapshot.id,
-      )
-    end
+    snapshot = FetchSpotifyPlaylistSnapshot.new(
+      spotify_client: client,
+      playlist: playlist,
+      spotify_snapshot_id: link.spotify_snapshot_id,
+    ).call
+
+    next if snapshot == :unchanged
   end
 
   redirect "/watch/#{spotify_user_id}"
@@ -261,33 +118,59 @@ get "/watch/:id" do
 
   playlists = spotify_user.playlists
 
+  first_time_per_user = UserPlaylistSnapshotState.where(
+    user_id: @current_user.id,
+    spotify_user_id: spotify_user.id,
+  ).empty?
+
   results = playlists.map do |playlist|
-    # поточний снапшот
+    # 1. поточний (останній) снапшот
     current_snapshot = playlist
       .playlist_snapshots_dataset
       .order(Sequel.desc(:snapshot_time))
       .first
 
-    # state для цього user + playlist
+    # 2. state цього користувача для цього плейліста
     state = UserPlaylistSnapshotState.first(
       user_id: @current_user.id,
+      spotify_user_id: spotify_user.id,
       playlist_id: playlist.id,
     )
 
     previous_snapshot = state&.playlist_snapshot
 
-    PlaylistPresenter.new(
+    presenter = PlaylistPresenter.new(
       playlist: playlist,
       previous_snapshot: previous_snapshot,
       current_snapshot: current_snapshot,
     )
+
+    # 3. ПІСЛЯ порівняння — оновлюємо state
+    if current_snapshot
+      if state
+        state.update(
+          playlist_snapshot_id: current_snapshot.id,
+          updated_at: Time.now,
+        )
+      else
+        UserPlaylistSnapshotState.create(
+          user_id: @current_user.id,
+          spotify_user_id: spotify_user.id,
+          playlist_id: playlist.id,
+          playlist_snapshot_id: current_snapshot.id,
+        )
+      end
+    end
+
+    presenter
   end
 
   erb :list, locals: {
+               spotify_user_id: spotify_user.spotify_user_id,
                user_display_name: spotify_user.display_name,
                user_avatar: spotify_user.avatar_img_url,
                stats: SpotifyUserStats.new(spotify_user),
                results: results,
-               first_time_per_user: results.all? { |r| r.added.empty? && r.removed.empty? },
+               first_time_per_user: first_time_per_user,
              }
 end

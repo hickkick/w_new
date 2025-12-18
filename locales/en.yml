@@ -7,7 +7,23 @@ en:
     footer_year: "2025"
     info_link: "ℹ️ What is this project?"
     modal_title: "🚧 Test version"
-    modal_text: "This is a preview release. Data is not stored in a database. Do not clear your cookies — everything will disappear!"
+    modal_text: >
+      This is a preview version of the service.
+      Your change history is stored locally in your browser.
+
+      ⚠️ Please do not clear your cookies — otherwise all
+      tracking history will be lost.
+
+      Authentication and persistent data storage
+      are currently under development.
+    modal_disclaimer: >
+      This service uses only publicly available Spotify data.
+
+      We do not access private playlists,
+      collect personal user information,
+      or violate Spotify’s terms of service.
+
+      Only publicly visible information is displayed.
     modal_made: "Made with love by"
     lang_ua: "UA"
     lang_en: "EN"
@@ -28,7 +44,15 @@ en:
     added_global: "🟢 New tracks in all playlists"
     removed_global: "🔴 Removed tracks from playlists"
     tracks_count: "%{count} tracks"
-    first_run: "This is the first run. Changes will be shown after the next refresh."
+    first_run: >
+      Welcome! You’ve just created your change history 🎧
+      From now on, you’ll be able to track which songs are added
+      or removed from your friends’ playlists and never miss
+      anything interesting.
+
+      Thanks for using this service and staying on the same wave.
+
+      P.S. On the next updates, you’ll start seeing all the changes 😉
 
   track:
     close: "Close"

@@ -1,7 +1,8 @@
 class FetchSpotifyPlaylistSnapshot
-  def initialize(spotify_client:, playlist:)
+  def initialize(spotify_client:, playlist:, spotify_snapshot_id:)
     @spotify_client = spotify_client
     @playlist = playlist
+    @spotify_snapshot_id = spotify_snapshot_id
   end
 
   def call
@@ -13,7 +14,7 @@ class FetchSpotifyPlaylistSnapshot
 
     snapshot = PlaylistSnapshot.create(
       playlist_id: @playlist.id,
-      spotify_snapshot_id: @playlist.playlist_snapshot_id,
+      spotify_snapshot_id: @spotify_snapshot_id,
       snapshot_time: Time.now,
     )
 
@@ -63,7 +64,7 @@ class FetchSpotifyPlaylistSnapshot
 
     return false unless last_snapshot
 
-    @playlist.playlist_snapshot_id == last_snapshot.spotify_snapshot_id
+    last_snapshot.spotify_snapshot_id == @spotify_snapshot_id
   end
 
   def extract_artists(track_data)

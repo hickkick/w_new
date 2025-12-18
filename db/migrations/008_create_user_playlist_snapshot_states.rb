@@ -11,7 +11,7 @@ Sequel.migration do
       DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
       DateTime :updated_at, default: Sequel::CURRENT_TIMESTAMP
 
-      index [:user_id, :playlist_id], unique: true
+      index [:user_id, :spotify_user_id, :playlist_id], unique: true
     end
   end
 end

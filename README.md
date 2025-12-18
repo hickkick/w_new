@@ -27,7 +27,7 @@ This is a **pet project** built for learning and fun — especially to practice 
 - Spotify Web API
 - ERB templates (views)
 - Vanilla JS for light interactivity
-- No database — snapshots stored in local file system per session
+- DB - sqlite3 for dev and ps for prod
 
 ---
 
@@ -35,7 +35,6 @@ This is a **pet project** built for learning and fun — especially to practice 
 
 This is a **test version**:
 
-- All data is stored temporarily (per session)
 - If you clear cookies, history will be lost
 - Not suitable for production or commercial use (yet)
 
@@ -44,7 +43,7 @@ This is a **test version**:
 ## 🛠 Future plans
 
 - Spotify OAuth login
-- Friend comparison history
+- Friend comparison history (Almost done)
 - Notifications when playlists update
 - Better mobile support
 
@@ -59,6 +58,6 @@ by Romanoli
 
 ## 🔖 Versioning
 
-Current version: `v0.0.1`
+Current version: `v0.0.2`
 
-This is the first working prototype (MVP)  
+This is the second working prototype (MVP)  
