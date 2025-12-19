@@ -31,6 +31,8 @@ require_relative "./services/fetch_spotify_playlist_snapshot"
 require_relative "./services/spotify_users_stats"
 require_relative "./services/fetch_spotify_user_profile"
 require_relative "./services/refresh_spotify_user"
+require_relative "./services/watch_page_query"
+require_relative "./services/update_user_playlist_snapshot_state"
 
 require_relative "./presenters/track_presenter"
 require_relative "./presenters/playlist_presenter"
@@ -136,62 +138,25 @@ end
 
 get "/watch/:id" do
   spotify_user = SpotifyUser.first(spotify_user_id: params[:id])
+  halt 404 unless spotify_user
 
-  playlists = spotify_user.playlists
+  page = WatchPageQuery.new(
+    spotify_user: spotify_user,
+    current_user: @current_user,
+  ).call
 
-  first_time_per_user = UserPlaylistSnapshotState.where(
-    user_id: @current_user.id,
-    spotify_user_id: spotify_user.id,
-  ).empty?
-
-  results = playlists.map do |playlist|
-    # 1. поточний (останній) снапшот
-    current_snapshot = playlist
-      .playlist_snapshots_dataset
-      .order(Sequel.desc(:snapshot_time))
-      .first
-
-    # 2. state цього користувача для цього плейліста
-    state = UserPlaylistSnapshotState.first(
-      user_id: @current_user.id,
-      spotify_user_id: spotify_user.id,
-      playlist_id: playlist.id,
-    )
-
-    previous_snapshot = state&.playlist_snapshot
-
-    presenter = PlaylistPresenter.new(
-      playlist: playlist,
-      previous_snapshot: previous_snapshot,
-      current_snapshot: current_snapshot,
-    )
-
-    # 3. ПІСЛЯ порівняння — оновлюємо state
-    if current_snapshot
-      if state
-        state.update(
-          playlist_snapshot_id: current_snapshot.id,
-          updated_at: Time.now,
-        )
-      else
-        UserPlaylistSnapshotState.create(
-          user_id: @current_user.id,
-          spotify_user_id: spotify_user.id,
-          playlist_id: playlist.id,
-          playlist_snapshot_id: current_snapshot.id,
-        )
-      end
-    end
-
-    presenter
-  end
+  UpdateUserPlaylistSnapshotState.new(
+    user: @current_user,
+    spotify_user: spotify_user,
+    playlists: spotify_user.playlists,
+  ).call
 
   erb :list, locals: {
                spotify_user_id: spotify_user.spotify_user_id,
                user_display_name: spotify_user.display_name,
                user_avatar: spotify_user.avatar_img_url,
                stats: SpotifyUserStats.new(spotify_user),
-               results: results,
-               first_time_per_user: first_time_per_user,
+               results: page[:results],
+               first_time_per_user: page[:first_time_per_user],
              }
 end
