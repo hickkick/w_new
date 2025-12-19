@@ -3,6 +3,8 @@ require "json"
 require "base64"
 
 class SpotifyClient
+  class NotFoundError < StandardError; end
+
   TOKEN_URL = "https://accounts.spotify.com/api/token"
   API_BASE = "https://api.spotify.com/v1"
   CACHE_FILE = "token_cache.json"
@@ -55,7 +57,9 @@ class SpotifyClient
                                    "Authorization" => "Bearer #{@access_token}",
                                  })
 
-    if response.code >= 400
+    if response.code == 404
+      raise NotFoundError, "User not found"
+    elsif response.code >= 400
       raise "Spotify API Error (#{response.code}): #{response.body}"
     end
 

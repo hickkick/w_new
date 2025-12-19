@@ -159,6 +159,9 @@ ol {
 }
 
 /* .user-header__name {} */
+.init-msg {
+  max-width: 942px;
+}
 
 .playlist-tile {
   background: white;

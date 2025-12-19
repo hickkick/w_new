@@ -11,6 +11,9 @@ require "securerandom"
 require "i18n"
 require "i18n/backend/simple"
 
+require_relative "helpers/spotify_link_helper"
+require_relative "helpers/text_helper"
+
 require_relative "./lib/spotify_client"
 require_relative "./lib/playlist_watcher"
 require_relative "./lib/snapshot_storage"
@@ -27,6 +30,7 @@ require_relative "./services/fetch_spotify_user_playlists"
 require_relative "./services/fetch_spotify_playlist_snapshot"
 require_relative "./services/spotify_users_stats"
 require_relative "./services/fetch_spotify_user_profile"
+require_relative "./services/refresh_spotify_user"
 
 require_relative "./presenters/track_presenter"
 require_relative "./presenters/playlist_presenter"
@@ -34,6 +38,9 @@ require_relative "./presenters/playlist_presenter"
 set :bind, "0.0.0.0"
 set :port, ENV.fetch("PORT", 4567)
 disable :sessions
+
+helpers SpotifyLinkHelper
+helpers TextHelper
 
 configure do
   I18n.load_path += Dir[File.join(settings.root, "locales", "*.yml")]
@@ -58,6 +65,11 @@ helpers do
   def t(key, **opts)
     I18n.t(key, **opts)
   end
+
+  # def show_error(key)
+  #   @error = t(key)
+  #   erb :index
+  # end
 end
 
 get "/" do
@@ -78,37 +90,46 @@ get "/set_lang" do
 end
 
 post "/watch" do
-  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
-  spotify_user_id = client.extract_user_id(params[:link]) || params[:spotify_user_id]
+  link = params[:link]&.strip
 
-  spotify_user = SpotifyUser.find_or_create(
-    spotify_user_id: spotify_user_id,
-  )
+  if link.nil? || link.empty?
+    @error = t("errors.empty_link")
+    return erb :index
+  end
 
-  FetchSpotifyUserProfile.new(
-    spotify_client: client,
-    spotify_user: spotify_user,
-  ).call
+  spotify_user_id = extract_spotify_user_id(link)
 
-  playlists = FetchSpotifyUserPlaylists.new(
-    spotify_client: client,
-    spotify_user: spotify_user,
-  ).call
+  unless spotify_user_id
+    @error = t("errors.invalid_spotify_link")
+    return erb :index
+  end
 
-  playlists.each do |playlist|
-    link = SpotifyUserPlaylist.first(
-      spotify_user_id: spotify_user.id,
-      playlist_id: playlist.id,
-    )
+  begin
+    client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
 
-    snapshot = FetchSpotifyPlaylistSnapshot.new(
-      spotify_client: client,
-      playlist: playlist,
-      spotify_snapshot_id: link.spotify_snapshot_id,
+    RefreshSpotifyUser.new(
+      spotify_user_id: spotify_user_id,
+      client: client,
     ).call
 
-    next if snapshot == :unchanged
+    redirect "/watch/#{spotify_user_id}"
+  rescue SpotifyClient::NotFoundError
+    @error = t("errors.user_not_found", username: spotify_user_id)
+    erb :index
+  rescue => e
+    @error = t("errors.unexpected_error")
+    erb :index
   end
+end
+
+post "/watch/:id" do
+  client = SpotifyClient.new(ENV["SPOTIFY_CLIENT_ID"], ENV["SPOTIFY_CLIENT_SECRET"])
+  spotify_user_id = params[:id]
+
+  RefreshSpotifyUser.new(
+    spotify_user_id: spotify_user_id,
+    client: client,
+  ).call
 
   redirect "/watch/#{spotify_user_id}"
 end
