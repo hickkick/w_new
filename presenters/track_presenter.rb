@@ -13,7 +13,7 @@ class TrackPresenter
   end
 
   def album_cover
-    @track.album_cover_url || "/images/default_cover.jpg"
+    @track.album_cover_url || "/images/default_album_cover.jpg"
   end
 
   def added_at_formatted

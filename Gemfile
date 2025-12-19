@@ -11,7 +11,7 @@ gem "rack"
 gem "puma"
 gem "i18n"
 gem "sequel"
-
+gem "rake"
 gem "rackup", "~> 2.2"
 
 group :development do

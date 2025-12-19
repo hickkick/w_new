@@ -30,7 +30,7 @@ class FetchSpotifyPlaylistSnapshot
         name: track_data["name"],
         artists: extract_artists(track_data),
         album: track_data["album"]["name"],
-        album_cover_url: track_data.dig("album", "images", 1, "url") || "/default.jpg",
+        album_cover_url: track_data.dig("album", "images", 1, "url") || "/default_album_cover.jpg",
         duration_ms: track_data["duration_ms"],
         play_url: track_data.dig("external_urls", "spotify") || "#",
       )

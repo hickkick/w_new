@@ -1,5 +1,6 @@
 class PlaylistSnapshot < Sequel::Model
   many_to_one :playlist
+
   one_to_many :playlist_snapshot_tracks,
               key: :snapshot_id
 
