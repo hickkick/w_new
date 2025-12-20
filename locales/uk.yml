@@ -25,13 +25,14 @@ uk:
 
       Відображається лише та інформація,
       яка є публічно доступною.
-    modal_made: "Зроблено з любов’ю"
+    modal_made: "Зроблено з ❤️"
     lang_ua: "UA"
     lang_en: "EN"
   index:
     label_profile_link: "Spotify профіль лінк:"
     placeholder_user_link: "лінк користувача..."
     loading: "Завантаження..."
+    first_load_disclaimer: "Багато треків? Перший раз може зайняти пару хвилин"
     error_invalid: "Невірне посилання"
   header:
     playlists: "Плейлістів"

@@ -21,7 +21,9 @@
   </head>
   <body class="body">
     <header class="header">
-      <h1 class="header__title"><%= I18n.t("app.header_title") %></h1>
+      <h1 class="header__title">
+        <a href="/" class="header__title-link"><%= I18n.t("app.header_title") %></a>
+      </h1>
       <nav class="top-nav">
         <button class="button button-circle button_theme" 
                 id="theme-toggle" 
@@ -50,9 +52,9 @@
       <div class="modal-content">
         <span class="close">&times;</span>
         <h3><%= I18n.t("app.modal_title") %></h3>
-        <p><%= I18n.t("app.modal_text") %></p>
-        <p><%= I18n.t("app.modal_disclaimer") %></p>
-        <p style="white-space: pre-line"><%= nl2br(I18n.t("app.modal_made")) %>
+        <p><%= nl2br(I18n.t("app.modal_text")) %></p>
+        <p><%= nl2br(I18n.t("app.modal_disclaimer")) %></p>
+        <p><%= I18n.t("app.modal_made") %>
           <a href="https://github.com/hickkick" target="blank" class="default-link">Romanoli</a>
         </p>
       </div>

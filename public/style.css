@@ -62,6 +62,11 @@ ol {
   text-overflow: ellipsis;
 }
 
+.header__title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .button {
   background: var(--button-bg);
   color: var(--button-text);
@@ -108,6 +113,10 @@ ol {
 
   .refresh-button:hover {
     background-color: #17a44b;
+  }
+
+  .header__title-link:hover {
+    opacity: 0.8;
   }
 
 }
@@ -494,6 +503,12 @@ ol {
   color: red;
   margin-top: 10px;
   font-weight: bold;
+  transition: opacity 0.3s ease-out;
+}
+
+.form-error.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* index loader */

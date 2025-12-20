@@ -92,3 +92,13 @@ window.addEventListener("click", function (e) {
     }
 });
 // END Modal section
+// index.erb Error hide section
+const errorMessage = document.getElementById('error-message');
+const watchFormInput = document.getElementById('watch-form-input');
+
+if (errorMessage && watchFormInput) {
+    watchFormInput.addEventListener('input', function () {
+        errorMessage.classList.add('hidden');
+    });
+}
+// END index.erb Error hide section

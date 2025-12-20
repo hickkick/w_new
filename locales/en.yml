@@ -24,13 +24,14 @@ en:
       or violate Spotify’s terms of service.
 
       Only publicly visible information is displayed.
-    modal_made: "Made with love by"
+    modal_made: "Made with ❤️ by"
     lang_ua: "UA"
     lang_en: "EN"
   index:
     label_profile_link: "Spotify profile link:"
     placeholder_user_link: "user link..."
     loading: "Loading..."
+    first_load_disclaimer: "Lots of tracks? First time may take a couple minutes"
     error_invalid: "Invalid link"
 
   header:
