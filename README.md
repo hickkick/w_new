@@ -58,6 +58,6 @@ by Romanoli
 
 ## 🔖 Versioning
 
-Current version: `v0.0.2`
+Current version: `v0.1.0`
 
 This is the second working prototype (MVP)  
