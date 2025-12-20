@@ -5,7 +5,13 @@ require "sinatra/json"
 configure :development do
   require "sinatra/reloader"
   also_reload "./**/*.rb"
+
+  require "rack-mini-profiler"
+  use Rack::MiniProfiler
 end
+
+require_relative "config/logger"
+LOGGER.debug("LOGGER come in chat baby!")
 
 require "securerandom"
 require "i18n"
@@ -14,6 +20,7 @@ require "i18n/backend/simple"
 require_relative "helpers/spotify_link_helper"
 require_relative "helpers/text_helper"
 
+require_relative "./lib/instrumentation"
 require_relative "./lib/spotify_client"
 require_relative "./lib/playlist_watcher"
 require_relative "./lib/snapshot_storage"

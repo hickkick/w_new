@@ -7,12 +7,14 @@ class FetchSpotifyUserProfile
   end
 
   def call
-    data = @client.fetch_user_profile(@spotify_user.spotify_user_id)
+    Instrumentation.measure("Fetch Spotify User Profile") do
+      data = @client.fetch_user_profile(@spotify_user.spotify_user_id)
 
-    @spotify_user.update(
-      display_name: data["display_name"],
-      avatar_img_url: data.dig("images", 0, "url"),
-      last_fetched_at: Time.now,
-    )
+      @spotify_user.update(
+        display_name: data["display_name"],
+        avatar_img_url: data.dig("images", 0, "url"),
+        last_fetched_at: Time.now,
+      )
+    end
   end
 end

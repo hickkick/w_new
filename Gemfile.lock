@@ -25,6 +25,8 @@ GEM
     puma (6.6.0)
       nio4r (~> 2.0)
     rack (3.1.16)
+    rack-mini-profiler (4.0.1)
+      rack (>= 1.2.0)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -62,9 +64,11 @@ DEPENDENCIES
   httparty (~> 0.23.1)
   i18n
   json (~> 2.11.3)
+  logger
   pg
   puma
   rack
+  rack-mini-profiler
   rackup (~> 2.2)
   rake
   sequel

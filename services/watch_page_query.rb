@@ -5,30 +5,32 @@ class WatchPageQuery
   end
 
   def call
-    playlists = @spotify_user.playlists
+    Instrumentation.measure("Watch Page Query 'get /watch/:id'") do
+      playlists = @spotify_user.playlists
 
-    results = playlists.map do |playlist|
-      current_snapshot = playlist
-        .playlist_snapshots_dataset
-        .order(Sequel.desc(:snapshot_time))
-        .first
+      results = playlists.map do |playlist|
+        current_snapshot = playlist
+          .playlist_snapshots_dataset
+          .order(Sequel.desc(:snapshot_time))
+          .first
 
-      state = UserPlaylistSnapshotState.first(
-        user_id: @current_user.id,
-        playlist_id: playlist.id,
-      )
+        state = UserPlaylistSnapshotState.first(
+          user_id: @current_user.id,
+          playlist_id: playlist.id,
+        )
 
-      PlaylistPresenter.new(
-        playlist: playlist,
-        previous_snapshot: state&.playlist_snapshot,
-        current_snapshot: current_snapshot,
-      )
+        PlaylistPresenter.new(
+          playlist: playlist,
+          previous_snapshot: state&.playlist_snapshot,
+          current_snapshot: current_snapshot,
+        )
+      end
+
+      {
+        results: results,
+        first_time_per_user: first_time_per_user?,
+      }
     end
-
-    {
-      results: results,
-      first_time_per_user: first_time_per_user?,
-    }
   end
 
   private

@@ -6,52 +6,54 @@ class FetchSpotifyPlaylistSnapshot
   end
 
   def call
-    return :unchanged if snapshot_already_fetched?
+    Instrumentation.measure("Featch Spotify Playlist Snapshot") do
+      return :unchanged if snapshot_already_fetched?
 
-    tracks_data = @spotify_client.get_playlist_tracks(
-      @playlist.playlist_id
-    )
-
-    snapshot = PlaylistSnapshot.create(
-      playlist_id: @playlist.id,
-      spotify_snapshot_id: @spotify_snapshot_id,
-      snapshot_time: Time.now,
-    )
-
-    tracks_data.each_with_index do |item, index|
-      track_data = item["track"]
-      next unless track_data
-
-      track = Track.find_or_create(
-        spotify_track_id: track_data["id"],
+      tracks_data = @spotify_client.get_playlist_tracks(
+        @playlist.playlist_id
       )
 
-      track.update(
-        name: track_data["name"],
-        artists: extract_artists(track_data),
-        album: track_data["album"]["name"],
-        album_cover_url: track_data.dig("album", "images", 1, "url") || "/default_album_cover.jpg",
-        duration_ms: track_data["duration_ms"],
-        play_url: track_data.dig("external_urls", "spotify") || "#",
+      snapshot = PlaylistSnapshot.create(
+        playlist_id: @playlist.id,
+        spotify_snapshot_id: @spotify_snapshot_id,
+        snapshot_time: Time.now,
       )
 
-      existing = PlaylistSnapshotTrack.first(
-        snapshot_id: snapshot.id,
-        track_id: track.id,
-        position: index,
-      )
+      tracks_data.each_with_index do |item, index|
+        track_data = item["track"]
+        next unless track_data
 
-      unless existing
-        PlaylistSnapshotTrack.create(
+        track = Track.find_or_create(
+          spotify_track_id: track_data["id"],
+        )
+
+        track.update(
+          name: track_data["name"],
+          artists: extract_artists(track_data),
+          album: track_data["album"]["name"],
+          album_cover_url: track_data.dig("album", "images", 1, "url") || "/default_album_cover.jpg",
+          duration_ms: track_data["duration_ms"],
+          play_url: track_data.dig("external_urls", "spotify") || "#",
+        )
+
+        existing = PlaylistSnapshotTrack.first(
           snapshot_id: snapshot.id,
           track_id: track.id,
-          added_at: item["added_at"],
           position: index,
         )
-      end
-    end
 
-    snapshot
+        unless existing
+          PlaylistSnapshotTrack.create(
+            snapshot_id: snapshot.id,
+            track_id: track.id,
+            added_at: item["added_at"],
+            position: index,
+          )
+        end
+      end
+
+      snapshot
+    end
   end
 
   private
