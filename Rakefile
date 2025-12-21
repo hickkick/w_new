@@ -1,4 +1,4 @@
-require "./db/database"
+require "./config/initializers/database"
 require "sequel/extensions/migration"
 require "fileutils"
 
@@ -72,15 +72,15 @@ end
 namespace :server do
   desc "запуск сервера з авторелоадом"
   task :r do
-    puts "🚀 Запуск сервера з авторелоадом (через rerun)..."
-    exec "ruby app.rb"
+    puts "🚀 Запуск сервера через rackup..."
+    exec "bundle exec rackup"
   end
 
   desc "Повний ресет бази та запуск сервера"
   task :rrr do
     Rake::Task["db:reset"].invoke
 
-    puts "🚀 Запуск сервера Sinatra..."
+    puts "🚀 Запуск сервера ..."
 
     Rake::Task["server:r"].invoke
   end

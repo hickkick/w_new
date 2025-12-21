@@ -6,7 +6,8 @@ DB = case environment
   when "production"
     Sequel.connect(ENV.fetch("DATABASE_URL"))
   else
-    Sequel.sqlite("db/dev.sqlite3")
+    db_path = File.expand_path("../../../db/dev.sqlite3", __FILE__)
+    Sequel.sqlite(db_path)
   end
 
-Dir["./models/*.rb"].each { |f| require f }
+DB.loggers << LOGGER if defined?(LOGGER) && development?

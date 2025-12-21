@@ -16,7 +16,6 @@ gem "rackup", "~> 2.2"
 
 group :development do
   gem "sqlite3"
-  gem "logger"
   gem "rack-mini-profiler"
 end
 
