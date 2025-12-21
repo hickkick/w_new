@@ -5,4 +5,4 @@ echo "Running migrations..."
 bundle exec sequel -m db/migrations $DATABASE_URL
 
 echo "Starting app..."
-exec bundle exec ruby app.rb -p $PORT
+exec bundle exec rackup -p $PORT -o 0.0.0.0

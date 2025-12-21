@@ -64,7 +64,6 @@ DEPENDENCIES
   httparty (~> 0.23.1)
   i18n
   json (~> 2.11.3)
-  logger
   pg
   puma
   rack

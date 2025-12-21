@@ -16,3 +16,5 @@ require env_file if File.exist?(env_file)
 %w[lib helpers models services presenters].each do |dir|
   Dir["#{APP_ROOT}/#{dir}/**/*.rb"].each { |f| require f }
 end
+
+Dir[File.join(APP_ROOT, "routes", "*.rb")].each { |f| require f }
