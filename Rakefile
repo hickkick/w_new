@@ -34,27 +34,59 @@ namespace :db do
     Rake::Task["db:migrate"].invoke
   end
 
-  desc "Створити нову міграцію (шаблон 001, 002...)"
+  desc "Створити нову міграцію (шаблон 001, 002...) та модель"
   task :new_migration, [:name] do |t, args|
     name = args[:name] || "migration"
+
+    # Створюємо міграцію
     FileUtils.mkdir_p(MIGRATIONS_DIR)
-
-    # Знаходимо останній номер у папці
     last_migration = Dir["#{MIGRATIONS_DIR}/*.rb"].map { |f| File.basename(f).to_i }.max || 0
-    new_number = (last_migration + 1).to_s.rjust(3, "0") # робить 001, 002...
+    new_number = (last_migration + 1).to_s.rjust(3, "0")
+    migration_filename = "#{MIGRATIONS_DIR}/#{new_number}_#{name}.rb"
 
-    filename = "#{MIGRATIONS_DIR}/#{new_number}_#{name}.rb"
-
-    File.open(filename, "w") do |f|
+    File.open(migration_filename, "w") do |f|
       f.write <<~RUBY
                 Sequel.migration do
                   change do
-                    # create_table :table do ... end
+                    # create_table :#{name.gsub("create_", "").gsub("add_", "")} do
+                    #   primary_key :id
+                    #   String :name, null: false
+                    #   DateTime :created_at
+                    #   DateTime :updated_at
+                    # end
                   end
                 end
               RUBY
     end
-    puts "📝 Створено: #{filename}"
+    puts "📝 Створено міграцію: #{migration_filename}"
+
+    # Створюємо модель
+    FileUtils.mkdir_p("models")
+    # Перетворюємо назву на CamelCase для класу
+    # create_users → User, add_posts → Post
+    model_name = name.gsub(/^(create|add)_/, "").split("_").map(&:capitalize).join
+    model_name = model_name.chomp("s") # users → User (прибираємо множину)
+
+    model_filename = "models/#{model_name.downcase}.rb"
+
+    unless File.exist?(model_filename)
+      File.open(model_filename, "w") do |f|
+        f.write <<~RUBY
+                  class #{model_name} < Sequel::Model
+                    # plugin :timestamps, update_on_create: true
+                    # plugin :validation_helpers
+                    
+                    # def validate
+                    #   super
+                    #   validates_presence [:name]
+                    # end
+                  end
+                RUBY
+      end
+      puts "📦 Створено модель: #{model_filename}"
+    else
+      puts "⚠️  Модель #{model_filename} вже існує, пропускаємо."
+    end
   end
 end
 
