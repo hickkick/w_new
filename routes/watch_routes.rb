@@ -22,6 +22,7 @@ module Routes
           RefreshSpotifyUser.new(
             spotify_user_id: spotify_user_id,
             client: client,
+            user: @current_user,
           ).call
 
           redirect "/watch/#{spotify_user_id}"
@@ -41,6 +42,7 @@ module Routes
         RefreshSpotifyUser.new(
           spotify_user_id: spotify_user_id,
           client: client,
+          user: @current_user,
         ).call
 
         redirect "/watch/#{spotify_user_id}"
@@ -50,15 +52,10 @@ module Routes
         spotify_user = SpotifyUser.first(spotify_user_id: params[:id])
         halt 404 unless spotify_user
 
-        page = WatchPageQuery.new(
+        page = WatchPageResolver.new(
           spotify_user: spotify_user,
           current_user: @current_user,
-        ).call
-
-        UpdateUserPlaylistSnapshotState.new(
-          user: @current_user,
-          spotify_user: spotify_user,
-          playlists: spotify_user.playlists,
+          change_id: params[:change],
         ).call
 
         erb :list, locals: {
@@ -68,6 +65,7 @@ module Routes
                      stats: SpotifyUserStats.new(spotify_user),
                      results: page[:results],
                      first_time_per_user: page[:first_time_per_user],
+                     navigation: page[:navigation],
                    }
       end
     end

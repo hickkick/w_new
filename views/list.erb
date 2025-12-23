@@ -40,6 +40,18 @@
     <p class="center" ><%= nl2br(t("playlists.first_run")) %></p>
   </div>
 <% else %>
+  <div class="navigation">
+    <% if navigation[:prev_change_id] %>
+      <a href="/watch/<%= spotify_user_id %>?change=<%= navigation[:prev_change_id] %>">
+        ←
+      </a>
+    <% end %>
+    <% if navigation[:next_change_id] %>
+      <a href="/watch/<%= spotify_user_id %>?change=<%= navigation[:next_change_id] %>">
+        →
+      </a>
+    <% end %>
+  </div>
   <div class="playlist-grid">
     <% if all_added.any? %>
       <%= erb :'partials/playlist_card', locals: {
