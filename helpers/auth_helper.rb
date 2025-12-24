@@ -4,7 +4,20 @@ module AuthHelper
   def current_user
     @current_user ||= begin
         uuid = get_or_create_user_uuid
-        User.first(uuid: uuid) || User.create(uuid: uuid)
+        user = User.first(uuid: uuid)
+
+        unless user
+          User.create(uuid: uuid)
+          AuditLogger.instance.warn(
+            {
+              event: "user_created",
+              uuid: uuid,
+              users_count: User.count,
+            }.to_json
+          )
+        end
+
+        user
       end
   end
 

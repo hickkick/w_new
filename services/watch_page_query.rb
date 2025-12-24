@@ -26,22 +26,9 @@ class WatchPageQuery
         )
       end
 
-      last_change = WatchChange
-        .where(
-          user_id: @current_user.id,
-          spotify_user_id: @spotify_user.id,
-        )
-        .order(Sequel.desc(:id))
-        .first
-
       {
         results: results,
         first_time_per_user: first_time_per_user?,
-        navigation: {
-          current_change_id: nil,
-          prev_change_id: last_change&.id,
-          next_change_id: nil,
-        },
       }
     end
   end

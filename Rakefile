@@ -105,7 +105,7 @@ namespace :server do
   desc "запуск сервера з авторелоадом"
   task :r do
     puts "🚀 Запуск сервера через rackup..."
-    exec "bundle exec rackup"
+    exec "bundle exec rackup -o 0.0.0.0 -p 4567"
   end
 
   desc "Повний ресет бази та запуск сервера"

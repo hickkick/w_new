@@ -7,13 +7,13 @@ class WatchPageResolver
 
   def call
     if @change_id
-      WatchChangePageQuery.new(
+      page = WatchChangePageQuery.new(
         spotify_user: @spotify_user,
         current_user: @current_user,
         change_id: @change_id,
       ).call
     else
-      result = WatchPageQuery.new(
+      page = WatchPageQuery.new(
         spotify_user: @spotify_user,
         current_user: @current_user,
       ).call
@@ -23,8 +23,14 @@ class WatchPageResolver
         spotify_user: @spotify_user,
         playlists: @spotify_user.playlists,
       ).call
-
-      result
     end
+    # LOGGER.debug("current change id: #{@change_id.class}")
+    navigation = ChangeNavigationResolver.new(
+      spotify_user: @spotify_user,
+      user: @current_user,
+      current_change_id: @change_id,
+    ).call
+
+    page.merge(navigation: navigation)
   end
 end

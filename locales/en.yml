@@ -64,3 +64,7 @@ en:
     empty_link: "This link empty. Try https://open.spotify.com/user/username?si=23a97a01103c423d"
     user_not_found: "User '%{username}' not found! Check if the link is correct"
     unexpected_error: "Something went wrong. Please try again later"
+    not_found: "404 - Page not found"
+    path: "Path:"
+    method: "Method:"
+    go_back: "Back to main page"

@@ -52,11 +52,15 @@ module Routes
         spotify_user = SpotifyUser.first(spotify_user_id: params[:id])
         halt 404 unless spotify_user
 
-        page = WatchPageResolver.new(
-          spotify_user: spotify_user,
-          current_user: @current_user,
-          change_id: params[:change],
-        ).call
+        begin
+          page = WatchPageResolver.new(
+            spotify_user: spotify_user,
+            current_user: @current_user,
+            change_id: params[:change],
+          ).call
+        rescue WatchChangePageQuery::NotFound
+          halt 404
+        end
 
         erb :list, locals: {
                      spotify_user_id: spotify_user.spotify_user_id,

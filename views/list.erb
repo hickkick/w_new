@@ -40,16 +40,18 @@
     <p class="center" ><%= nl2br(t("playlists.first_run")) %></p>
   </div>
 <% else %>
-  <div class="navigation">
+  <div class="list-navigation">
     <% if navigation[:prev_change_id] %>
-      <a href="/watch/<%= spotify_user_id %>?change=<%= navigation[:prev_change_id] %>">
-        ←
-      </a>
+      <a class="button" href="/watch/<%= spotify_user_id %>?change=<%= navigation[:prev_change_id] %>">←</a>
+    <% else %>
+      <span class="button disabled">←</span>
     <% end %>
-    <% if navigation[:next_change_id] %>
-      <a href="/watch/<%= spotify_user_id %>?change=<%= navigation[:next_change_id] %>">
-        →
-      </a>
+    <% if navigation[:next_change_id] == :default %>
+      <a class="button" href="/watch/<%= spotify_user_id %>">→</a>
+    <% elsif navigation[:next_change_id] %>
+      <a class="button" href="/watch/<%= spotify_user_id %>?change=<%= navigation[:next_change_id] %>">→</a>
+    <% else %>
+      <span class="button disabled">→</span>
     <% end %>
   </div>
   <div class="playlist-grid">

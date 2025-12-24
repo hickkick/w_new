@@ -18,8 +18,6 @@ class WNew < Sinatra::Base
   end
 
   configure :development do
-    set :bind, "0.0.0.0"
-
     register Sinatra::Reloader
     also_reload "./**/*.rb"
     Rack::MiniProfiler.config.position = "left"
@@ -35,7 +33,19 @@ class WNew < Sinatra::Base
   before do
     current_user
     set_locale
+
+    AuditLogger.instance.info(
+      {
+        event: "request",
+        user_uuid: @current_user.uuid,
+        users_count: User.count,
+        path: request.path,
+        method: request.request_method,
+        params: params,
+      }.to_json
+    )
   end
+  register ErrorHandlers
 
   register Routes::Base
   register Routes::Watch

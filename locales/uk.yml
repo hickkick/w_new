@@ -62,3 +62,7 @@ uk:
     empty_link: "Це посилання пусте. Спробуй щось на зразок https://open.spotify.com/user/username?si=23a97a01103c423d"
     user_not_found: "Користувача '%{username}' не знайдено! Перевір правильність посилання"
     unexpected_error: "Щось пішло не так. Спробуй пізніше"
+    not_found: "404 - Сторінку не знайдено"
+    path: "Шлях:"
+    method: "Метод:"
+    go_back: "Повернутися на головну"

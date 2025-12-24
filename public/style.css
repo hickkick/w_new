@@ -78,6 +78,10 @@ ol {
   transition: background 0.2s ease;
 }
 
+a.button {
+  text-decoration: none;
+}
+
 .button-circle {
   width: 48px;
   height: 48px;
@@ -100,6 +104,12 @@ ol {
 .button_new {
   padding: 10px 20px;
   font-size: 16px;
+}
+
+.button.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  cursor: default;
 }
 
 @media (hover: hover) and (min-width: 800px) {
@@ -145,6 +155,7 @@ ol {
   border: 2px solid var(--bg);
   border-radius: 50px;
   padding: 16px;
+  font-size: var(--font-base)
 }
 
 .search-form__btn {
@@ -183,6 +194,10 @@ ol {
 
 .center {
   text-align: center;
+}
+
+.list-navigation {
+  margin-bottom: var(--spacing-md);
 }
 
 .playlist-grid {
@@ -602,6 +617,7 @@ html,
   height: 100%;
   display: none;
   background-color: var(--muted);
+  cursor: pointer;
 }
 
 .modal-content {
@@ -613,6 +629,7 @@ html,
   max-width: 600px;
   text-align: center;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  cursor: auto;
 }
 
 .close {
@@ -694,3 +711,7 @@ html,
 }
 
 /* END NAV */
+/* Navigation in list erb */
+
+
+/* END Navigation in list erb */
